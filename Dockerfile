@@ -45,7 +45,7 @@ RUN mkdir -p /tmp/bitnami/pkg/cache/ ; cd /tmp/bitnami/pkg/cache/ ; \
       rm -rf "${COMPONENT}".tar.gz{,.sha256} ; \
     done
 RUN apt-get autoremove --purge -y curl && \
-    apt-get update && apt-get upgrade -y && \
+    apt-get update && apt-get upgrade -y && apt-get install curl && \
     apt-get clean && rm -rf /var/lib/apt/lists /var/cache/apt/archives
 RUN chmod g+rwX /opt/bitnami
 RUN find / -perm /6000 -type f -exec chmod a-s {} \; || true
@@ -61,6 +61,16 @@ ENV APP_VERSION="6.7.1" \
     NGINX_HTTPS_PORT_NUMBER="" \
     NGINX_HTTP_PORT_NUMBER="" \
     PATH="/opt/bitnami/common/bin:/opt/bitnami/php/bin:/opt/bitnami/php/sbin:/opt/bitnami/nginx/sbin:/opt/bitnami/mysql/bin:/opt/bitnami/wp-cli/bin:$PATH"
+
+WORKDIR /tmp/ioncube
+RUN curl -L http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz -o ioncube_loaders_lin_x86-64.tar.gz && \
+    tar xvzf ioncube_loaders_lin_x86-64.tar.gz && \
+    cp ioncube/ioncube_loader_lin_8.2.so /opt/bitnami/php/lib/php/extensions/ && \
+    cp /opt/bitnami/php/etc/php.ini /opt/bitnami/php/etc/php.ini.old && \
+    echo 'zend_extension = /opt/bitnami/php/lib/php/extensions/ioncube_loader_lin_8.2.so' | tee /opt/bitnami/php/etc/php.ini && \
+    cat /opt/bitnami/php/etc/php.ini.old | tee -a /opt/bitnami/php/etc/php.ini && \
+    rm -f /opt/bitnami/php/etc/php.ini.old
+WORKDIR /
 
 EXPOSE 8080 8443
 
